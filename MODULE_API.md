@@ -22,9 +22,27 @@ Discord 슬래시 커맨드 JSON의 부분집합이에요:
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| name | string (필수) | 소문자/숫자/-/_ 한글 허용, 1~32자 |
+| name | string (필수) | 소문자/숫자/-/_ 한글 허용, 1~32자. 대문자는 라틴 포함 모든 문자(키릴·그리스 등) 불가 |
 | description | string (필수) | 1~100자 |
-| options | array | 슬래시 옵션 (name, description, type, required) |
+| options | array | 최대 25개. 아래 옵션 형식 참고 |
+
+### options
+
+```js
+options: [{ name, description, type, required?, choices? }]
+```
+
+| 필드 | 설명 |
+|---|---|
+| name | 커맨드 이름과 동일한 규칙 (소문자/숫자/한글 1~32자), 중복 불가 |
+| description | 1~100자 |
+| type | 문자열 이름 권장: `string` `integer` `boolean` `user` `channel` `role` `mentionable` `number` `attachment` (Discord 숫자 3~11도 허용) |
+| required | 필수 옵션은 선택 옵션보다 앞에 와야 해요 (Discord 규칙) |
+| choices | `string`/`integer`/`number` 타입에만. 최대 25개의 `{ name, value }`, value는 타입과 일치 |
+
+계약을 벗어난 모듈은 봇이 로드를 건너뛰어요. 등록은 all-or-nothing이라
+잘못된 값 하나가 내장 커맨드까지 포함한 전체 등록을 깨뜨리지 않게 하려는
+안전장치예요.
 
 ## execute(interaction, ctx)
 
@@ -32,7 +50,7 @@ Discord 슬래시 커맨드 JSON의 부분집합이에요:
 
 | ctx 필드 | 설명 |
 |---|---|
-| ctx.user | { id, username, displayName } 스냅샷 |
+| ctx.user | { id, username, displayName } 스냅샷. displayName은 서버 닉네임 우선, 없으면 글로벌 표시명 |
 | ctx.option.getString(name, required?) | 슬래시 옵션 문자열 조회 |
 | ctx.option.getInteger(name, required?) | 정수 옵션 조회 |
 | ctx.option.getBoolean(name, required?) | 불리언 옵션 조회 |
