@@ -27,6 +27,8 @@ git 없이 [이슈](https://github.com/Fullmoon-OSS/coin-bridge-modules/issues/n
 - 경제 **쓰기**는 커뮤니티 모듈에서 불가능해요. **읽기**는 `ctx.economy` 헬퍼
   (잔액·순위·거래·이벤트·길드·카지노 통계)로 가능해요 — 쿼리는 economy-api와
   동일한 감사된 SELECT만 제공돼요.
+- **버튼**(`onButton`)과 **주기 타이머**(`schedules`, 5분 이상)도 붙일 수
+  있어요. 모듈 파일을 고치면 봇이 자동으로 다시 로드해요.
 
 자세한 ctx 계약: [MODULE_API.md](./MODULE_API.md)
 

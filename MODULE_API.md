@@ -1,11 +1,14 @@
 # 모듈 API 계약 (ctx)
 
-모듈은 3개의 named export를 제공해요:
+모듈은 3개의 필수 named export를 제공하고, 선택 훅 2개를 더 쓸 수 있어요:
 
 ```js
 export const meta = { author, version, ephemeral? };
 export const command = { name, description, options? };
 export async function execute(interaction, ctx);
+// 선택:
+export async function onButton(interaction, ctx);          // 이 모듈 버튼 클릭 처리
+export const schedules = [{ everyMinutes, run(tools) }];   // 타이머 (모듈당 최대 2개)
 ```
 
 ## meta
@@ -56,6 +59,7 @@ options: [{ name, description, type, required?, choices? }]
 | ctx.option.getBoolean(name, required?) | 불리언 옵션 조회 |
 | ctx.reply(payload) | deferred reply를 edit해요. string 또는 { embeds: [...] } |
 | ctx.log(...args) | `[모듈:이름]` 프리픽스로 콘솔 로그 |
+| ctx.componentId(action) | 이 모듈 전용 버튼 customId 생성 — `cm:커맨드이름:action` |
 | ctx.economy | 원장 **읽기 전용** 헬퍼 모음 (아래 표) |
 
 로더는 execute 전에 `deferReply`를 호출해요. 그래서 `ctx.reply`는 항상
@@ -88,6 +92,57 @@ export async function execute(interaction, ctx) {
   await ctx.reply(`**${ctx.user.displayName}님** — ${w.balance.toLocaleString('ko-KR')}원 (서버 ${w.rank ?? '-'}위)`);
 }
 ```
+
+### 버튼 (onButton)
+
+모듈이 보낸 응답에 버튼을 달면, 클릭이 `onButton`으로 돌아와요:
+
+```js
+export async function execute(interaction, ctx) {
+  await ctx.reply({
+    content: '골드를 던졌어요!',
+    components: [{ type: 1, components: [{
+      type: 2, style: 1,
+      customId: ctx.componentId('다시'),   // 반드시 ctx.componentId로 생성
+      label: '한 번 더',
+    }] }],
+  });
+}
+
+export async function onButton(interaction, ctx) {
+  // interaction.customId는 'cm:커맨드이름:다시' — action 부분만 자르면 돼요.
+  const action = interaction.customId.split(':')[2];
+  await interaction.update({ content: `다시 던져서 ${roll()}이 나왔어요!` });
+}
+```
+
+- customId는 **반드시 `ctx.componentId()`로** 만들어요. 다른 접두사를 흉내
+  내면 거절 대상이에요.
+- 3초 안에 `interaction.update()`/`reply()`/`deferUpdate()` 중 하나를
+  호출해야 해요 (execute와 달리 로더가 대신 defer하지 않아요).
+- 모듈이 비활성화된 뒤 남은 버튼은 “더 이상 활성 모듈에 연결되어 있지 않아요”
+  에페머럴로 응답돼요.
+
+### 스케줄 (schedules)
+
+봇이 살아 있는 동안 주기적으로 도는 타이머예요. 재시작하면 다시 시작돼요:
+
+```js
+export const schedules = [{
+  everyMinutes: 30,
+  run: async (tools) => {
+    const top = await tools.economy.leaderboard(3);
+    await tools.send('채널ID', `현재 1위: ${top[0]?.mcUsername ?? '없음'}`);
+  },
+}];
+```
+
+- 모듈당 최대 2개, 전체 합계 16개 상한. `everyMinutes`는 5 이상의 정수.
+- `tools.send`는 텍스트 채널 전용이고, 멘션은 **유저 멘션만** 허용돼요 —
+  @everyone/역할 멘션은 봇이 걸러요. 내용은 2000자로 잘려요.
+- 실행 오류는 로그로 남고 봇은 계속 돌아가요.
+- 모듈 파일을 고치면 봇이 자동으로 다시 로드해요(핫리로드) — 타이머도 새로
+  구성돼요.
 
 ## 금지 사항
 
