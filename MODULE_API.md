@@ -65,8 +65,9 @@ options: [{ name, description, type, required?, choices? }]
 
 economy-api가 서빙하는 것과 **동일한 감사된 SELECT 쿼리**예요. 쓰기 경로가
 존재하지 않고, pool이나 db 모듈은 노출되지 않아요. 계정 id를 생략하면
-커맨드를 호출한 유저가 기본값이에요. 잘못된 인자(빈도 범위 밖 limit, 숫자가
-아닌 id)는 에러를 던져요 — execute를 try/catch로 감싸 주세요.
+커맨드를 호출한 유저가 기본값이에요. 범위 밖 limit·days와 무효한 before
+커서는 에러가 아니라 경계값(첫 페이지)으로 조정돼요 — 에러를 던지는 건
+숫자가 아닌 discordId뿐이에요. execute는 try/catch로 감싸 주세요.
 
 | 메서드 | 반환 | 설명 |
 |---|---|---|
