@@ -24,7 +24,9 @@ git 없이 [이슈](https://github.com/Fullmoon-OSS/coin-bridge-modules/issues/n
 - 금지: `eval`, `child_process`, `fetch`(외부 호출), `process.env` 접근,
   난독화, 동적 `import()`
 - 허용: `discord.js`, `node:` 빌트인 (crypto, path 등)
-- 경제 **쓰기**는 커뮤니티 모듈에서 불가능해요 (읽기 전용 API만 제공).
+- 경제 **쓰기**는 커뮤니티 모듈에서 불가능해요. **읽기**는 `ctx.economy` 헬퍼
+  (잔액·순위·거래·이벤트·길드·카지노 통계)로 가능해요 — 쿼리는 economy-api와
+  동일한 감사된 SELECT만 제공돼요.
 
 자세한 ctx 계약: [MODULE_API.md](./MODULE_API.md)
 

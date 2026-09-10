@@ -56,9 +56,37 @@ options: [{ name, description, type, required?, choices? }]
 | ctx.option.getBoolean(name, required?) | 불리언 옵션 조회 |
 | ctx.reply(payload) | deferred reply를 edit해요. string 또는 { embeds: [...] } |
 | ctx.log(...args) | `[모듈:이름]` 프리픽스로 콘솔 로그 |
+| ctx.economy | 원장 **읽기 전용** 헬퍼 모음 (아래 표) |
 
 로더는 execute 전에 `deferReply`를 호출해요. 그래서 `ctx.reply`는 항상
 `editReply`예요 — 3초 타임아웃 race가 없어요.
+
+### ctx.economy (원장 읽기 전용)
+
+economy-api가 서빙하는 것과 **동일한 감사된 SELECT 쿼리**예요. 쓰기 경로가
+존재하지 않고, pool이나 db 모듈은 노출되지 않아요. 계정 id를 생략하면
+커맨드를 호출한 유저가 기본값이에요. 잘못된 인자(빈도 범위 밖 limit, 숫자가
+아닌 id)는 에러를 던져요 — execute를 try/catch로 감싸 주세요.
+
+| 메서드 | 반환 | 설명 |
+|---|---|---|
+| ctx.economy.wallet(discordId?) | { discordId, balance, linked, mcUsername, rank } \| null | 지갑 + 서버 순위 |
+| ctx.economy.transactions(discordId?, { limit?, before? }) | { transactions, nextBefore } | 최신순 거래 페이지 (limit 1~50, 기본 10) |
+| ctx.economy.leaderboard(limit?) | [{ rank, discordId, mcUsername, balance }] | 잔액 상위권 (1~50, 기본 10) |
+| ctx.economy.events() | [{ name, kind, multiplier, startsAt, endsAt }] | 진행 중인 이벤트 (최대 25개) |
+| ctx.economy.guilds() | [{ name, fund, members }] | 기금 순 길드 목록 (최대 25개) |
+| ctx.economy.casinoToday() | [{ game, wagered, paidOut, netBurn }] | 오늘(UTC) 게임별 집계 |
+| ctx.economy.casinoHistory(days?) | [{ date, wagered, paidOut, netBurn }] | 일별 집계 (1~90일, 기본 30) |
+
+예시 — `/잔액표` 같은 커맨드가 한 줄로 완성돼요:
+
+```js
+export async function execute(interaction, ctx) {
+  const w = await ctx.economy.wallet();
+  if (!w) return ctx.reply('먼저 /연동코드로 계정을 만들어 주세요.');
+  await ctx.reply(`**${ctx.user.displayName}님** — ${w.balance.toLocaleString('ko-KR')}원 (서버 ${w.rank ?? '-'}위)`);
+}
+```
 
 ## 금지 사항
 
