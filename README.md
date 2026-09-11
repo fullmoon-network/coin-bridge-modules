@@ -12,7 +12,7 @@
 3. 운영자가 코드를 줄단위로 리뷰해요 (REVIEW.md 참고).
 4. 머지되면 다음 봇 배포 때 커맨드가 디스코드에 등록돼요.
 
-git 없이 [이슈](https://github.com/Fullmoon-OSS/coin-bridge-modules/issues/new)로
+git 없이 [이슈](https://github.com/fullmoon-network/coin-bridge-modules/issues/new)로
 아이디어만 제안하는 것도 환영이에요.
 
 ## 보안 (중요)
